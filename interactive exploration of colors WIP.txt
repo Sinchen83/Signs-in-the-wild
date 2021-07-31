@@ -1,0 +1,176 @@
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+// HOOVERING WITH MOUSE OVER CANVAS FOR INTERACTIVITY 
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+//------------------------------------------------------------------
+
+
+
+//  ART BLOCKS STUFF
+//--------------------------------------------------------------------
+var DEFAULT_SIZE = 1000;
+var WIDTH = window.innerWidth;
+var HEIGHT = window.innerHeight;
+var DIM = Math.min(WIDTH, HEIGHT);
+var M = DIM / DEFAULT_SIZE;
+var hash = random_hash();
+var seed = parseInt(hash.slice(0, 16), 16);
+var p = [];
+for (let i = 0; i < 64; i += 2) {
+  p.push(hash.slice(i + 2, i + 4));
+}
+var rns = p.map((x) => {
+  return parseInt(x, 16) % 10;
+});
+
+//--------------------------------------------------------------------
+var Klecks = [];
+var quadsize;
+var divisor;
+var Abstand;
+var Backgroundcolor = [];
+var dynamicbg = [];
+
+var bg1 = [0, 255, 255, 0, 0, 255, 0, 255, 80, 160];
+var bg2 = [0, 255, 0, 255, 0, 0, 255, 255, 80, 160];
+var bg3 = [0, 255, 0, 0, 255, 255, 255, 0, 80, 160];
+
+var dbg1 = [320, 179, 179, 179, 213, 221, 255, 0, 118, 3, 233];
+var dbg2 = [201, 179, 230, 230, 179, 204, 162, 219, 246, 62];
+var dbg3 = [179, 230, 204, 179, 230, 0, 146, 222, 239, 59];
+
+function setup() {
+  // TESTS ------------------------------------------------------------
+  //print(hash);
+
+  //---------------------------------------------------------------------
+
+  // CREATE CANVAS & BACKGROUND
+  var i1;
+  var i2;
+  var AnzahlKleckse = 0;
+  if (rns[3] < 4) {
+    Backgroundcolor = 255;
+  }
+
+  divisor = round(map(rns[0], 0, 9, 4, 12));
+  quadsize = WIDTH / divisor;
+  Abstand = map(rns[1], 0, 9, 0.75, 1);
+
+  createCanvas(WIDTH, WIDTH);
+
+  for (i2 = 0; i2 <= divisor - 2; i2++) {
+    for (i1 = 0; i1 <= divisor - 2; i1++) {
+      Klecks[AnzahlKleckse] = new klecks(
+        WIDTH / divisor + quadsize * i1,
+        WIDTH / divisor + quadsize * i2,
+        quadsize * Abstand,
+        i1,
+        i2
+      );
+      AnzahlKleckse += 1;
+    }
+  }
+
+  // TESTS ------------------------------------------------------------
+
+  /*
+  print("WIDTH: ", WIDTH);
+  print("divisor:", divisor);
+  print(Klecks);
+  print((WIDTH / divisor) * (divisor - 1));
+*/
+
+  //---------------------------------------------------------------------
+}
+
+function draw() {
+  rectMode(CENTER);
+
+  //background(Backgroundcolor);
+
+  //SETUP BACKGROUND-------------------------------------------------
+  //static
+  if (rns[9] < 3) {
+    background(bg1[rns[5]], bg2[rns[5]], bg3[rns[5]]);
+  }
+
+  //black & white
+  else if (rns[9] < 6) {
+    if (rns[5] < 5) {
+      background(map(mouseX + mouseY, 0, WIDTH * 2, 0, 255));
+    } else {
+      background(map(mouseX + mouseY, 0, WIDTH * 2, 255, 0));
+    }
+  }
+
+  //color shift
+  else {
+    background(
+      map(mouseX + mouseY, 0, WIDTH * 2, dbg1[rns[5]], dbg1[rns[6]]),
+      map(mouseX + mouseY, 0, WIDTH * 2, dbg2[rns[5]], dbg2[rns[6]]),
+      map(mouseX + mouseY, 0, WIDTH * 2, dbg3[rns[5]], dbg3[rns[6]])
+    );
+  }
+
+  for (var i = 0; i < Klecks.length; i++) {
+    Klecks[i].display();
+    Klecks[i].move();
+  }
+}
+
+function klecks(tempX, tempY, tempSize, tempCX, tempCY) {
+  this.x = tempX;
+  this.y = tempY;
+  this.size = tempSize;
+  this.constrainX = tempCX;
+  this.constrainY = tempCY;
+
+  this.display = function () {
+    var rot = round(map(rns[4], 0, 9, 0, 255));
+    var gruen = round(map(rns[5], 0, 9, 0, 255));
+    var blau = round(map(rns[6], 0, 9, 0, 255));
+    //noStroke();
+    if (Backgroundcolor == 255) {
+      stroke(0);
+    } else stroke(255);
+    fill(rot, gruen, blau, 50);
+    rect(this.x, this.y, this.size, this.size, rns[2]);
+  };
+
+  this.move = function () {
+    // if (mouseIsPressed) {
+    this.x = mouseX;
+    this.y = mouseY;
+    this.x = constrain(
+      this.x,
+      (WIDTH / divisor) * (this.constrainX + 1),
+      WIDTH - quadsize
+    );
+    // this.y = constrain(this.y, WIDTH/divisor, (WIDTH / divisor) * (this.C + 1));
+    this.y = constrain(
+      this.y,
+      WIDTH / divisor + this.constrainY * quadsize,
+      WIDTH - quadsize
+    );
+  };
+  //}
+}
+
+//  ART BLOCKS STUFF
+//----------------------------------------------------------------
+function random_hash() {
+  let x = "0123456789abcdef",
+    hash = "0x";
+  for (let i = 64; i > 0; --i) {
+    hash += x[Math.floor(Math.random() * x.length)];
+  }
+
+  // TEST HASH FOR DETERMINATION TEST
+  //hash = "0x53b752200d52adacfeb1464a71f6df26a6cfe1203778cfc41fccd91fba51fae1 ";
+
+  return hash;
+}
+//----------------------------------------------------------------
